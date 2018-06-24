@@ -1,0 +1,39 @@
+#!/bin/sh
+
+if [ ! -f /etc/bind/namedmanager_initialized ]; then
+    cd /etc/bind
+    cp -r /var/www/html/namedmanager/etc_bind/* .
+    mkdir /etc/bind/namedmanager
+    rndc-confgen -a
+    AUTH_KEY=$(grep secret /etc/bind/rndc.key | awk -F '"' '{print $2}')
+    sed -i -- "s/@NM_API_AUTH_KEY@/${AUTH_KEY}/g" /etc/namedmanager/config-bind.php
+    sed -i -- "s/@MYSQL_NM_PASSWORD@/${MYSQL_NM_PASSWORD}/g" /etc/namedmanager/config.php
+    mkdir -p /var/log/apache2
+    # init mysql
+    mysql_install_db
+    service mysql start
+    mysql -u root < /var/www/html/namedmanager/sql/version_20131222_install.sql
+    mysql -u root -e "GRANT USAGE ON *.* TO namedmanager@'localhost' IDENTIFIED BY '${MYSQL_NM_PASSWORD}' WITH MAX_QUERIES_PER_HOUR 0 MAX_CONNECTIONS_PER_HOUR 0 MAX_UPDATES_PER_HOUR 0;"
+    mysql -u root -e "GRANT SELECT , INSERT , UPDATE , DELETE , CREATE , DROP , INDEX , ALTER , CREATE TEMPORARY TABLES, LOCK TABLES ON namedmanager.* TO namedmanager@'localhost';"
+    mysql -u root -e "FLUSH PRIVILEGES;"
+    mysql -u root -e "INSERT INTO name_servers VALUES (1,1,1,1,'localhost','BIND9 running in Docker Container','api','${AUTH_KEY}',1,1)" namedmanager;
+    touch /etc/bind/namedmanager_initialized
+    echo
+    echo "*********************************************************************"
+    echo "** Your name server FQDN is 'localhost'                            **"
+    echo "** The API Authoentication key is ${AUTH_KEY}         **"
+    echo "** You can add this DNS server here:                               **"
+    echo "**   http://localhost:8090/index.php?page=servers/add.php          **"
+    echo "** Initial login: setup  password: setup 123                       **"
+    echo "*********************************************************************"
+    echo
+else
+    service mysql start
+fi
+
+service bind9 start
+service cron start
+service inetutils-syslogd start
+service apache2 start
+
+tail -f /var/log/*

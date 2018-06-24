@@ -1,0 +1,11 @@
+#
+# NAMEDMANAGER INTEGRATION
+# Cron Jobs
+#
+
+# check for new configuration every minute
+*/1 * * * * root /usr/local/bin/php -q /var/www/html/namedmanager/bind/namedmanager_bind_configwriter.php
+
+# PHP slowly leaks memory, restart the process weekly to prevent it getting too large over months
+01 01 * * 0 root /etc/init.d/namedmanager_logpush restart >> /dev/null 2>&1
+
