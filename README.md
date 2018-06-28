@@ -60,7 +60,7 @@ You would probably also need to setup external volumes, edit the configuration e
 
 Here is the simplest form you can use to set up a temporary DNS server:
 ```
-docker run -p 8090:8090 -p 53:53/udp --name bind9 conceptant/bind9-namedmanager
+docker run -p 8090:8090 -p 53:53/tcp -p 53:53/udp conceptant/bind9-namedmanager
 ```
 It will take a few moments to start and generate default configuration, and then you start configuring it using this URL: http://localhost:8090.
 While the container performs the initialization it will output important information containing your RNDC key, default login and password.
@@ -72,10 +72,17 @@ You will need to write down this information so you can login into the web inter
 In order to persist the data, you will need to preserve the database between the container restarts as well as bind configuration files.
 Here is how to keep these folders:
 ```
-docker run -p 8090:8090 -p 53:53/udp -v <bind_config_dir>:/etc/bind -v <mysql_db_dir>:/var/lib/mysql --name nm named
+docker run -p 8090:8090 -p 53:53/tcp -p 53:53/udp -v <bind_config_dir>:/etc/bind -v <mysql_db_dir>:/var/lib/mysql conceptant/bind9-namedmanager
 ```
 <bind_config_dir>, <mysql_db_dir> are the directories on docker host where the BIND configuration and Mariadb database will be persisted respectevely
+
+Finally, you may want to add couple more handy configuration parameters:
+```
+docker run -d --restart unless-stopped -p 8090:8090 -p 53:53/tcp -p 53:53/udp -v <bind_config_dir>:/etc/bind -v <mysql_db_dir>:/var/lib/mysql -v <log_dir>:/var/log --name bind9 conceptant/bind9-namedmanager
+```
 -v <log_dir>:/var/log is something you may want to add so you can monitor the container logs from the host filesystem. You may also need this to preserve the logs for the audit purposes.
+--restart unless-stopped will make the container restart after system reboot
+--name will give it persistent name
 
 # If you need to customize the docker file
 
