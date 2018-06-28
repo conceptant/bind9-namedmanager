@@ -84,6 +84,13 @@ docker run -d --restart unless-stopped -p 8090:8090 -p 53:53/tcp -p 53:53/udp -v
 --restart unless-stopped will make the container restart after system reboot
 --name will give it persistent name
 
+Now when the docker container is running you may wonder how to access the web interface. One way to do it is using ssh command looking like this:
+```
+ssh username@docker_host -L 8090:127.0.0.1:8090
+```
+In this command -L flag maps the remote port 8090 from the docker host to your computer's local port, so after you login into the remote host with this SSH command you can open browser on your computer and go to http://localhost:8090 and see the web interface.
+The best part is that even though you are accessing the website using HTTP protocol and not HTTPS, you traffic is still encrypted by SSH, so this method is completely safe.
+
 # If you need to customize the docker file
 
 ```
