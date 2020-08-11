@@ -23,9 +23,9 @@ RUN apt-get update \
         vim \
         dnsutils
 
-RUN wget https://repos.jethrocarr.com/pub/jethrocarr/source/namedmanager/namedmanager-1.9.0.tar.bz2 \
-    && tar xjvf namedmanager-1.9.0.tar.bz2 \
-    && rm namedmanager-1.9.0.tar.bz2 \
+RUN wget https://github.com/jethrocarr/namedmanager/archive/1.9.0.tar.gz \
+    && tar -zxvf namedmanager-1.9.0.tar.gz \
+    && rm namedmanager-1.9.0.tar.gz \
     && ln -s namedmanager-1.9.0 namedmanager \
     && mkdir -p /etc/namedmanager \
     && mkdir -p /var/www/html/namedmanager/etc_bind/ \
